@@ -3,6 +3,20 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 
+class UserProfile(models.Model):
+    ROLE_CHOICES = (
+        ('PUBLIC', 'Public'),
+        ('CONTRACTOR', 'Contractor'),
+        ('GOVERNMENT', 'Government'),
+        ('AUDITOR', 'Auditor'),
+    )
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='PUBLIC')
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.role}"
+
+
 class Project(models.Model):
     name = models.CharField(max_length=200)
     location = models.CharField(max_length=200)
@@ -30,6 +44,12 @@ class Fund(models.Model):
 
 
 class Progress(models.Model):
+    STATUS_CHOICES = (
+        ('PENDING', 'Pending'),
+        ('APPROVED', 'Approved'),
+        ('REJECTED', 'Rejected'),
+    )
+    
     project = models.ForeignKey(
         Project,
         related_name="progress",
@@ -39,6 +59,10 @@ class Progress(models.Model):
     financial_progress = models.PositiveIntegerField()
     report_url = models.URLField(blank=True)
     date = models.DateField(auto_now_add=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
+    submitted_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='submitted_progress')
+    reviewed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_progress')
+    reviewed_at = models.DateTimeField(null=True, blank=True)
 
     def clean(self):
         if self.physical_progress > 100 or self.financial_progress > 100:
