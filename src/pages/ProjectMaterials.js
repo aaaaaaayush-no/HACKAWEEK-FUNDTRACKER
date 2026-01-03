@@ -8,6 +8,7 @@ function ProjectMaterials() {
   const [materials, setMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
+  const [verifying, setVerifying] = useState(false);
   const { role } = useAuth();
 
   useEffect(() => {
@@ -27,13 +28,17 @@ function ProjectMaterials() {
   };
 
   const handleVerify = async (materialId) => {
+    if (verifying) return;
+    setVerifying(true);
     try {
       await verifyMaterial(materialId);
       setMessage('Material verified successfully!');
       fetchMaterials();
     } catch (error) {
-      setMessage('Error verifying material.');
+      setMessage(error.response?.data?.error || error.response?.data?.detail || 'Error verifying material.');
       console.error(error);
+    } finally {
+      setVerifying(false);
     }
   };
 
@@ -107,9 +112,9 @@ function ProjectMaterials() {
               </thead>
               <tbody>
                 {materials.map((material) => {
-                  const variance = material.total_actual_cost 
-                    ? parseFloat(material.total_actual_cost) - parseFloat(material.total_planned_cost)
-                    : null;
+                  const plannedCost = parseFloat(material.total_planned_cost || 0);
+                  const actualCost = material.total_actual_cost ? parseFloat(material.total_actual_cost) : null;
+                  const variance = actualCost !== null ? actualCost - plannedCost : null;
                   
                   return (
                     <tr key={material.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
@@ -122,17 +127,17 @@ function ProjectMaterials() {
                         )}
                       </td>
                       <td style={{ padding: '12px' }}>{material.unit}</td>
-                      <td style={{ padding: '12px' }}>₹{parseFloat(material.unit_price).toLocaleString()}</td>
-                      <td style={{ padding: '12px' }}>{parseFloat(material.planned_quantity).toLocaleString()}</td>
+                      <td style={{ padding: '12px' }}>₹{parseFloat(material.unit_price || 0).toLocaleString()}</td>
+                      <td style={{ padding: '12px' }}>{parseFloat(material.planned_quantity || 0).toLocaleString()}</td>
                       <td style={{ padding: '12px' }}>
                         {material.actual_quantity 
                           ? parseFloat(material.actual_quantity).toLocaleString() 
                           : '-'}
                       </td>
-                      <td style={{ padding: '12px' }}>₹{parseFloat(material.total_planned_cost).toLocaleString()}</td>
+                      <td style={{ padding: '12px' }}>₹{plannedCost.toLocaleString()}</td>
                       <td style={{ padding: '12px' }}>
-                        {material.total_actual_cost 
-                          ? `₹${parseFloat(material.total_actual_cost).toLocaleString()}`
+                        {actualCost !== null 
+                          ? `₹${actualCost.toLocaleString()}`
                           : '-'}
                         {variance !== null && (
                           <span style={{ 
@@ -157,9 +162,10 @@ function ProjectMaterials() {
                             <button 
                               className="approve-btn"
                               onClick={() => handleVerify(material.id)}
+                              disabled={verifying}
                               style={{ padding: '6px 12px', fontSize: '12px' }}
                             >
-                              Verify
+                              {verifying ? 'Verifying...' : 'Verify'}
                             </button>
                           )}
                         </td>

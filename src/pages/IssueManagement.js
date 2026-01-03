@@ -92,7 +92,7 @@ function IssueManagement() {
       });
       fetchData();
     } catch (error) {
-      setMessage('Error creating issue report.');
+      setMessage(error.response?.data?.error || error.response?.data?.detail || 'Error creating issue report.');
       console.error(error);
     }
   };
@@ -314,7 +314,7 @@ function IssueManagement() {
                 
                 <div className="approval-details">
                   <p><strong>Project:</strong> {getProjectName(issue.project)}</p>
-                  <p><strong>Type:</strong> {issue.issue_type.replace('_', ' ')}</p>
+                  <p><strong>Type:</strong> {issue.issue_type.replace(/_/g, ' ')}</p>
                   <p><strong>Description:</strong> {issue.description}</p>
                   <p><strong>Reported:</strong> {new Date(issue.reported_at).toLocaleString()}</p>
                   

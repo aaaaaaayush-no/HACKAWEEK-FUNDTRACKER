@@ -69,28 +69,28 @@ function ContractorProfile() {
             <h3>Rating & Performance</h3>
             <div className="stats-container">
               <div className="stat-card">
-                <h3>{parseFloat(profile.rating).toFixed(2)}</h3>
+                <h3>{parseFloat(profile.rating || 0).toFixed(2)}</h3>
                 <p>Current Rating</p>
                 <div className="progress-bar-container" style={{ marginTop: '10px' }}>
                   <div 
                     className="progress-bar-fill" 
                     style={{ 
-                      width: `${(parseFloat(profile.rating) / 5) * 100}%`,
-                      backgroundColor: profile.rating >= 3.8 ? '#10b981' : '#ef4444'
+                      width: `${(parseFloat(profile.rating || 0) / 5) * 100}%`,
+                      backgroundColor: parseFloat(profile.rating || 0) >= 3.8 ? '#10b981' : '#ef4444'
                     }}
                   ></div>
                 </div>
               </div>
               <div className="stat-card">
-                <h3>{profile.total_projects_completed}</h3>
+                <h3>{profile.total_projects_completed || 0}</h3>
                 <p>Projects Completed</p>
               </div>
               <div className="stat-card">
-                <h3>{profile.total_projects_failed}</h3>
+                <h3>{profile.total_projects_failed || 0}</h3>
                 <p>Projects Failed</p>
               </div>
               <div className="stat-card">
-                <h3>{profile.years_of_experience}</h3>
+                <h3>{profile.years_of_experience || 0}</h3>
                 <p>Years Experience</p>
               </div>
             </div>
@@ -98,9 +98,9 @@ function ContractorProfile() {
             {/* AI Rating (if available) */}
             {profile.ai_rating && (
               <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#f0f9ff', borderRadius: '8px' }}>
-                <p><strong>🤖 AI Rating:</strong> {parseFloat(profile.ai_rating).toFixed(2)}</p>
+                <p><strong>🤖 AI Rating:</strong> {parseFloat(profile.ai_rating || 0).toFixed(2)}</p>
                 {profile.ai_risk_score && (
-                  <p><strong>📊 AI Risk Score:</strong> {parseFloat(profile.ai_risk_score).toFixed(2)}%</p>
+                  <p><strong>📊 AI Risk Score:</strong> {parseFloat(profile.ai_risk_score || 0).toFixed(2)}%</p>
                 )}
               </div>
             )}

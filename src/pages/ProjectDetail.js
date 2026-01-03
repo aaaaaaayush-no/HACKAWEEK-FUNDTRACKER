@@ -178,7 +178,7 @@ const ProjectDetail = () => {
                     </span>
                   </div>
                 </div>
-                <p><strong>Type:</strong> {issue.issue_type.replace('_', ' ')}</p>
+                <p><strong>Type:</strong> {issue.issue_type.replace(/_/g, ' ')}</p>
                 <p>{issue.description}</p>
                 {issue.is_forgiven && (
                   <p style={{ color: '#10b981' }}>✅ Forgiven: {issue.forgiveness_reason}</p>
