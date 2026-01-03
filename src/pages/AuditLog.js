@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
 import { getAuditLogs } from '../api/audit.api';
 
 function AuditLog() {
   const [auditLogs, setAuditLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
-  const { user } = useAuth();
 
   useEffect(() => {
     fetchAuditLogs();

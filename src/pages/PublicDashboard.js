@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { getProjects } from '../api/projects.api';
-import ProjectCard from '../components/ProjectCard';
 
 function PublicDashboard() {
   const [projects, setProjects] = useState([]);
