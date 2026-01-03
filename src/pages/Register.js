@@ -95,6 +95,7 @@ function Register() {
               name="email"
               value={formData.email}
               onChange={handleChange}
+              required
               placeholder="Enter your email"
             />
           </div>

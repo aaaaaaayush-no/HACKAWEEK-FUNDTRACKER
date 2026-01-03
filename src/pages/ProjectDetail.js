@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
 import { getProjectById } from "../api/projects.api";
 import ProgressBar from "../components/ProgressBar";
 
@@ -8,7 +7,6 @@ const ProjectDetail = () => {
   const { id } = useParams();
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { role } = useAuth();
 
   useEffect(() => {
     fetchProject();
