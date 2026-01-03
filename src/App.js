@@ -7,9 +7,12 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import PublicDashboard from "./pages/PublicDashboard";
 import ContractorDashboard from "./pages/ContractorDashboard";
+import ContractorProfile from "./pages/ContractorProfile";
 import GovernmentDashboard from "./pages/GovernmentDashboard";
 import AuditLog from "./pages/AuditLog";
 import ProjectDetail from "./pages/ProjectDetail";
+import ProjectMaterials from "./pages/ProjectMaterials";
+import IssueManagement from "./pages/IssueManagement";
 import ProtectedRoute from "./components/ProtectedRoute";
 import "./App.css";
 
@@ -26,6 +29,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/projects/:id" element={<ProjectDetail />} />
+              <Route path="/projects/:id/materials" element={<ProjectMaterials />} />
 
               {/* Protected routes */}
               <Route 
@@ -37,10 +41,26 @@ function App() {
                 } 
               />
               <Route 
+                path="/contractor/profile" 
+                element={
+                  <ProtectedRoute requiredRole="CONTRACTOR">
+                    <ContractorProfile />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
                 path="/government" 
                 element={
                   <ProtectedRoute requiredRole="GOVERNMENT">
                     <GovernmentDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/issues" 
+                element={
+                  <ProtectedRoute requiredRole="GOVERNMENT">
+                    <IssueManagement />
                   </ProtectedRoute>
                 } 
               />

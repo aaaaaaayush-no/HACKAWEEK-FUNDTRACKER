@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getPendingProgress, approveProgress, rejectProgress } from '../api/progress.api';
 import { getProjects } from '../api/projects.api';
+import { getSuspendedContractors } from '../api/contractor.api';
+import { getIssues } from '../api/issues.api';
 
 function GovernmentDashboard() {
   const [pendingProgress, setPendingProgress] = useState([]);
   const [projects, setProjects] = useState([]);
+  const [suspendedContractors, setSuspendedContractors] = useState([]);
+  const [pendingIssues, setPendingIssues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const { user } = useAuth();
@@ -16,12 +21,16 @@ function GovernmentDashboard() {
 
   const fetchData = async () => {
     try {
-      const [progressData, projectsData] = await Promise.all([
+      const [progressData, projectsData, suspendedData, issuesData] = await Promise.all([
         getPendingProgress(),
-        getProjects()
+        getProjects(),
+        getSuspendedContractors().catch(() => []),
+        getIssues().catch(() => [])
       ]);
       setPendingProgress(progressData);
       setProjects(projectsData);
+      setSuspendedContractors(suspendedData);
+      setPendingIssues(issuesData.filter(i => i.status === 'REPORTED' || i.status === 'UNDER_REVIEW' || i.status === 'VERIFIED'));
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -78,7 +87,40 @@ function GovernmentDashboard() {
           <h3>{pendingProgress.length}</h3>
           <p>Pending Approvals</p>
         </div>
+        <div className="stat-card">
+          <h3 style={{ color: pendingIssues.length > 0 ? '#f59e0b' : '#10b981' }}>
+            {pendingIssues.length}
+          </h3>
+          <p>Pending Issues</p>
+        </div>
+        <div className="stat-card">
+          <h3 style={{ color: suspendedContractors.length > 0 ? '#ef4444' : '#10b981' }}>
+            {suspendedContractors.length}
+          </h3>
+          <p>Suspended Contractors</p>
+        </div>
       </div>
+
+      {/* Quick Actions */}
+      <div style={{ marginTop: '20px', marginBottom: '30px' }}>
+        <Link to="/issues" className="submit-btn" style={{ textDecoration: 'none', marginRight: '10px' }}>
+          🔍 Manage Issues ({pendingIssues.length} pending)
+        </Link>
+      </div>
+
+      {/* Suspended Contractors Alert */}
+      {suspendedContractors.length > 0 && (
+        <div className="error-message" style={{ marginBottom: '20px' }}>
+          <h4>⚠️ Suspended Contractors ({suspendedContractors.length})</h4>
+          <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
+            {suspendedContractors.slice(0, 5).map((contractor) => (
+              <li key={contractor.id}>
+                {contractor.user_username} - Rating: {parseFloat(contractor.rating).toFixed(2)} - {contractor.suspension_reason}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div style={{ marginTop: '30px' }}>
         <h3>Pending Progress Approvals</h3>
