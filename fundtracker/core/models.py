@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.utils import timezone
 
 
 def validate_nepal_nid(value):
@@ -14,7 +15,9 @@ def validate_nepal_nid(value):
     Ward: 01-32 (max wards in a municipality)
     Number: 8 digit unique number
     """
-    pattern = r'^([0-7][0-9]|0[1-9])-([0-2][0-9]|3[0-2]|0[1-9])-\d{8}$'
+    # District: 01-77 (01-09, 10-69, 70-77)
+    # Ward: 01-32
+    pattern = r'^(0[1-9]|[1-6][0-9]|7[0-7])-(0[1-9]|[12][0-9]|3[0-2])-\d{8}$'
     if not re.match(pattern, value):
         raise ValidationError(
             'Invalid Nepal NID format. Expected: District-Ward-Number (e.g., 01-05-12345678)'
@@ -133,7 +136,6 @@ class ContractorProfile(models.Model):
         if self.rating < Decimal('3.80'):
             self.is_suspended = True
             self.suspension_reason = f"Rating dropped below 3.8 (Current: {self.rating})"
-            from django.utils import timezone
             self.suspended_at = timezone.now()
         
         self.save()
@@ -291,11 +293,16 @@ class Project(models.Model):
         return self.name
     
     def calculate_contract_size(self):
-        """Automatically determine contract size based on budget"""
+        """Automatically determine contract size based on budget
+        Budget thresholds (in Nepali Rupees):
+        - Small: < 10 Lakh (< 1,000,000)
+        - Medium: 10 Lakh to 1 Crore (1,000,000 to 10,000,000)
+        - Large: > 1 Crore (> 10,000,000)
+        """
         budget = self.total_budget
-        if budget < 1000000:  # < 10 Lakh
+        if budget < 1000000:  # < 10 Lakh (1,000,000 NPR)
             return 'SMALL'
-        elif budget < 10000000:  # < 1 Crore
+        elif budget < 10000000:  # < 1 Crore (10,000,000 NPR)
             return 'MEDIUM'
         else:
             return 'LARGE'
@@ -470,7 +477,6 @@ class Progress(models.Model):
         
         # ✅ Time-Based Reporting - Contractors can only submit reports after 5 PM
         # This validation is also enforced in the API view
-        from django.utils import timezone
         current_time = timezone.localtime(timezone.now())
         if current_time.hour < 17:  # Before 5 PM (17:00)
             raise ValidationError(

@@ -202,14 +202,21 @@ class ContractorRatingSerializer(serializers.ModelSerializer):
     def validate(self, data):
         """
         ✅ Proof-Based Ratings - Check if evidence is provided for negative ratings
+        Note: Evidence files should be uploaded using the key 'evidence' in multipart/form-data.
+        For API clients, evidence can be uploaded separately via the rating-evidence endpoint
+        after creating the rating.
         """
         rating_value = data.get('rating_value')
         if rating_value and rating_value <= 2:
-            # Check if evidence files are being uploaded
+            # Check if evidence files are being uploaded with key 'evidence'
+            # Evidence can also be uploaded separately after rating creation
             request = self.context.get('request')
-            if request and not request.FILES.getlist('evidence'):
-                raise serializers.ValidationError({
-                    'evidence': 'Photo/video evidence is required for ratings of 2 or below.'
-                })
+            if request and hasattr(request, 'FILES'):
+                evidence_files = request.FILES.getlist('evidence')
+                if not evidence_files:
+                    raise serializers.ValidationError({
+                        'evidence': 'Photo/video evidence is required for ratings of 2 or below. '
+                                   'Upload with key "evidence" or add evidence via /api/rating-evidence/ after creation.'
+                    })
         return data
 
