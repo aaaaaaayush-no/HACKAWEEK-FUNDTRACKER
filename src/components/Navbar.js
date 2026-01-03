@@ -49,6 +49,18 @@ function Navbar() {
                 Dashboard
               </Link>
               
+              {role === 'CONTRACTOR' && (
+                <Link to="/contractor/profile" onClick={() => setMobileMenuOpen(false)}>
+                  My Profile
+                </Link>
+              )}
+              
+              {role === 'GOVERNMENT' && (
+                <Link to="/issues" onClick={() => setMobileMenuOpen(false)}>
+                  Issue Management
+                </Link>
+              )}
+              
               {role === 'AUDITOR' && (
                 <Link to="/audit-log" onClick={() => setMobileMenuOpen(false)}>
                   Audit Log

@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getProjects } from "../api/projects.api";
 import { submitProgress } from "../api/progress.api";
+import { getContractorProfiles } from "../api/contractor.api";
 
 const ContractorDashboard = () => {
   const [projects, setProjects] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [contractorProfile, setContractorProfile] = useState(null);
   const [progressData, setProgressData] = useState({
     physical_progress: '',
     financial_progress: '',
@@ -17,6 +20,7 @@ const ContractorDashboard = () => {
 
   useEffect(() => {
     fetchProjects();
+    fetchContractorProfile();
   }, []);
 
   const fetchProjects = async () => {
@@ -25,6 +29,17 @@ const ContractorDashboard = () => {
       setProjects(data);
     } catch (error) {
       console.error('Error fetching projects:', error);
+    }
+  };
+
+  const fetchContractorProfile = async () => {
+    try {
+      const profiles = await getContractorProfiles();
+      if (profiles && profiles.length > 0) {
+        setContractorProfile(profiles[0]);
+      }
+    } catch (error) {
+      console.error('Error fetching contractor profile:', error);
     }
   };
 
@@ -61,8 +76,45 @@ const ContractorDashboard = () => {
         <p className="subtitle">Welcome, {user?.username}</p>
       </div>
 
+      {/* Contractor Profile Summary */}
+      {contractorProfile && (
+        <div className="stats-container" style={{ marginBottom: '30px' }}>
+          <div className="stat-card">
+            <h3 style={{ color: contractorProfile.rating >= 3.8 ? '#10b981' : '#ef4444' }}>
+              {parseFloat(contractorProfile.rating).toFixed(2)}
+            </h3>
+            <p>Current Rating</p>
+          </div>
+          <div className="stat-card">
+            <h3>{contractorProfile.total_projects_completed}</h3>
+            <p>Completed Projects</p>
+          </div>
+          <div className="stat-card">
+            <h3>{contractorProfile.is_suspended ? '⚠️ Yes' : '✅ No'}</h3>
+            <p>Suspended</p>
+          </div>
+          <div className="stat-card">
+            <Link to="/contractor/profile" className="submit-btn" style={{ textDecoration: 'none' }}>
+              View Full Profile
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Suspension Warning */}
+      {contractorProfile?.is_suspended && (
+        <div className="error-message" style={{ marginBottom: '20px' }}>
+          <h3>⚠️ Account Suspended</h3>
+          <p><strong>Reason:</strong> {contractorProfile.suspension_reason}</p>
+          <p>You cannot submit progress updates while suspended.</p>
+        </div>
+      )}
+
       <div className="progress-form-container">
         <h3>Submit Progress Update</h3>
+        <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '15px' }}>
+          ⏰ Note: Progress reports can only be submitted after 5:00 PM
+        </p>
         {message && <div className={message.includes('Error') ? 'error-message' : 'success-message'}>{message}</div>}
         
         <form onSubmit={handleSubmit}>
