@@ -2,6 +2,14 @@
 
 This guide explains how to test the authentication system and role-based access control features.
 
+## ⚠️ Important: Backend Setup Required
+
+**The backend is working correctly!** If you're having issues accessing the backend, it's likely because:
+1. Dependencies are not installed
+2. Database migrations haven't been run
+
+Follow the installation steps below carefully.
+
 ## Prerequisites
 
 Before testing, ensure you have:
@@ -13,32 +21,58 @@ Before testing, ensure you have:
 
 ### Backend Setup
 
-1. Navigate to the Django backend directory:
+1. Navigate to the project root directory:
+```bash
+cd /path/to/HACKAWEEK-FUNDTRACKER
+```
+
+2. **Install Python dependencies** (REQUIRED):
+```bash
+pip install -r requirements.txt
+```
+
+3. Navigate to the Django backend directory:
 ```bash
 cd fundtracker
 ```
 
-2. Install Python dependencies:
-```bash
-pip install -r ../requirements.txt
-```
-
-3. Run database migrations:
+4. **Run database migrations** (REQUIRED):
 ```bash
 python manage.py migrate
 ```
 
-4. Create a superuser (optional, for admin access):
+5. (Optional) Create a superuser for admin access:
 ```bash
 python manage.py createsuperuser
 ```
 
-5. Start the Django development server:
+6. **Start the Django development server**:
 ```bash
 python manage.py runserver 8000
 ```
 
+**Expected Output:**
+```
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+January 03, 2026 - 11:17:15
+Django version 5.2.9, using settings 'fundtracker.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+```
+
 The backend API will be available at: `http://127.0.0.1:8000/api/`
+
+**Verify backend is working:**
+```bash
+# Test API root
+curl http://127.0.0.1:8000/api/
+
+# Expected response:
+# {"projects":"http://127.0.0.1:8000/api/projects/","progress":"..."}
+```
 
 ### Frontend Setup
 
@@ -298,6 +332,26 @@ curl -X GET http://127.0.0.1:8000/api/progress/pending/ \
 
 ### Backend Issues:
 
+**"ModuleNotFoundError: No module named 'django'"**
+```bash
+# Solution: Install dependencies
+pip install -r requirements.txt
+```
+
+**"You have X unapplied migration(s)"**
+```bash
+# Solution: Run migrations
+cd fundtracker
+python manage.py migrate
+```
+
+**"django.db.utils.OperationalError: no such table"**
+```bash
+# Solution: Run migrations
+cd fundtracker
+python manage.py migrate
+```
+
 **Port already in use:**
 ```bash
 # Kill the process using port 8000
@@ -306,9 +360,20 @@ lsof -ti:8000 | xargs kill -9
 
 **Database issues:**
 ```bash
-# Reset database
+# Reset database (WARNING: This will delete all data)
 rm fundtracker/db.sqlite3
+cd fundtracker
 python manage.py migrate
+```
+
+**Cannot access API endpoints:**
+```bash
+# Verify backend is running
+curl http://127.0.0.1:8000/api/
+
+# If you get "Connection refused", start the backend:
+cd fundtracker
+python manage.py runserver 8000
 ```
 
 ### Frontend Issues:
